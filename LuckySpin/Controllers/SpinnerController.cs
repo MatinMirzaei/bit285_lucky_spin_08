@@ -3,15 +3,19 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using LuckySpin.Models;
 using LuckySpin.ViewModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace LuckySpin.Controllers
 {
     public class SpinnerController : Controller
     {
         private LuckySpinContext _dbc;
+
+       
+
         /***
-         * Controller Constructor
-         */
+* Controller Constructor
+*/
         public SpinnerController(LuckySpinContext luckySpinContext)
         {
             _dbc = luckySpinContext;
@@ -54,7 +58,8 @@ namespace LuckySpin.Controllers
             //** Gets the Player belonging to the given id
             //TODO: Modify the code to use the SingleOrDefault Lamda Extension method
             //TODO: Then Include the Players Spins collection
-            Player player = _dbc.Players.Find(id);
+            Player player = _dbc.Players.Include(p => p.Spins)
+                .SingleOrDefault(p =>p.Id ==id);
             // Populates a new SpinItViewModel for this spin
             // using the player information
             SpinItViewModel spinItVM = new SpinItViewModel() {
@@ -80,7 +85,8 @@ namespace LuckySpin.Controllers
             };
             //** Adds the Spin to the Database Context
             //TODO: Modify the next line to use the player's Spins collection instead
-            _dbc.Spins.Add(spin);
+            
+            player.Spins.Add(spin);
             //**** Saves all the changes to the Database at once
             _dbc.SaveChanges();
 
@@ -96,10 +102,11 @@ namespace LuckySpin.Controllers
             //Gets the Player belonging to the given id
             //TODO: Modify the code to use the SingleOrDefault Lamda Extension method
             //TODO: Then Include the Players Spins collection
-            Player player = _dbc.Players.Find(id);
+            Player player = _dbc.Players.Include(p => p.Spins)
+                .SingleOrDefault(p => p.Id == id);
             //Gets the list of Spins from the Context
             //TODO: Modify the next line to get the list of the player's Spins instead of all the Spins
-            IEnumerable<Spin> spins = _dbc.Spins;
+            IEnumerable<Spin> spins = player.Spins;
             // Hack in some detail about the player
             ViewBag.Player = player;
 
